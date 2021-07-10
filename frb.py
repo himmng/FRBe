@@ -1,4 +1,5 @@
-from model import *
+from model import Conf
+import numpy as np
 import scipy.special as sc
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
@@ -14,10 +15,10 @@ class Frb(object):
         parameters as mentioned in the Config Class. Also, It is recommended that
         you put all of the dataset into a same directory.
         '''
-        self.name = name
-        self.path = path
-        self.instr = Conf(self.name, self.path)  # configuring the telescope (instrument)
-        self.init = self.instr.params() # telescope parameters
+
+        instr = Conf(name, path)  # configuring the telescope (instrument)
+        self.init =  instr.params() # telescope parameters
+        self.instr = instr
 
     def fluence(self, z, r, theta, alpha, Eval):
         '''
@@ -77,10 +78,10 @@ class Frb(object):
         '''
         if alpha == -1.0:
             alpha += np.random.uniform(0,0.001)
-        Eval = Frb(self.name, self.path).esch(gama, Ebar, cdf)
+        Eval = self.esch(gama, Ebar, cdf)
         indx = np.where(Eval != 10000)[0]
 
-        Fval = Frb(self.name, self.path).fluence(z, r, theta, alpha, Eval)[indx]
+        Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
 
         cond = np.where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0]
 
@@ -105,17 +106,18 @@ class Frb(object):
         nFmod =  nFmod[x0[x1[y0[y1]]]]
 
         mua = plt.hist2d(x=nDMmod,y=nFmod, bins=(int(self.init[15]), int(self.init[16])))[0]
-        mua = mua * self.init[14] / len(cond)
+        mua = (mua * self.init[14])/ len(cond)
 
         return mua
 
-    def loss(self,N,mu):
+    def loss(self, N, mu):
         '''
 
         :param N: observed FRB events binned over fluence and Dispersion measure (type: array)
         :param mua: simulation predicted FRB events binned over fluence and Dispersion measure (type: array)
         :return: count loss between observation and prediction
         '''
+
         return -(np.sum(np.dot((mu - N).T, (mu - N))))
 
 

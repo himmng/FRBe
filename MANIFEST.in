@@ -1,0 +1,3 @@
+include README.rst
+include obs_data/
+include sim_data/
