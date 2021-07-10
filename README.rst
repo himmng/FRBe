@@ -28,7 +28,7 @@ Install
 
 ::
 
-    $ git clone https://github.com/himmng/FRBe.git
+    $ git clone https://github.com/himmng/FRBe.git --user
     $ cd FRBe
     $ python setup.py install
 
@@ -55,7 +55,7 @@ Using the FRB class in python:
 
     # using for specific telescope; use e.g. chime, utmost, askap, parkes
 
-    chime = FRB(name = 'chime', path = 'path_to_init') # provide name of telescope, path ot init (telescope paramters).
+    chime = FRB(name = 'chime', path = 'path_to_init') # provide name of telescope, path ot init (telescope parameters).
     # see docstring of Config class for help.
 
     # To do the prediction
@@ -65,7 +65,7 @@ Using the FRB class in python:
 
     parameters = alpha, ebar, gamma
     muc = chime.mu(*parameters, *args)
-    # *args; positional arguments are the simulation values which are loaded at once
+    # *args; positional arguments are the simulation values which loaded at once
     # args = [z, r, theta, dmtot, wwa, cdf]
 
 
