@@ -1,3 +1,4 @@
 include README.rst
+include init
 include obs_data/
 include sim_data/
