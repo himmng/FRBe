@@ -108,3 +108,28 @@ class Frb(object):
         mua = mua * self.init[14] / len(cond)
 
         return mua
+
+    def loss(self,N,mu):
+        '''
+
+        :param N: observed FRB events binned over fluence and Dispersion measure (type: array)
+        :param mua: simulation predicted FRB events binned over fluence and Dispersion measure (type: array)
+        :return: count loss between observation and prediction
+        '''
+        return -(np.sum(np.dot((mu - N).T, (mu - N))))
+
+
+    def loglike(self, N, mu):
+        '''
+
+        param N: observed FRB events binned over fluence and Dispersion measure (type: array)
+        :param mua: simulation predicted FRB events binned over fluence and Dispersion measure (type: array)
+        :return: binned summation of log likelihood
+        '''
+        ll = 0
+        for i in range(int(self.init[15])):
+            for j in range(int(self.init[16])):
+                if (mu[i][j] != 0):
+                    ll += N[i, j] * np.log(mu[i, j]) - mu[i, j]
+
+        return ll

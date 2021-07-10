@@ -47,8 +47,6 @@ Nap = np.loadtxt(path + 'obs_data/parkes/Nap')
 Nas = np.loadtxt(path + 'obs_data/askap/Nas')
 Nau = np.loadtxt(path + 'obs_data/utmost/Nau')
 
-
-
 def log_prior(theta):
     alpha, Ebar, gama = theta
     if -20. <= alpha <= 20. and 0.01 <= Ebar <= 10.0 and 0.0 <= gama <= 6.:
