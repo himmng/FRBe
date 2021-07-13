@@ -1,7 +1,7 @@
 from model import Conf
-import numpy as np
+from numpy import *
 import scipy.special as sc
-import matplotlib.pyplot as plt
+from matplotlib.pyplot import *
 from scipy.interpolate import interp1d
 
 class Frb(object):
@@ -32,10 +32,10 @@ class Frb(object):
         '''
 
         def phibar(z, alpha):
-            return (((np.power(self.init[6], 1.0 + alpha) - np.power(self.init[5], 1.0 + alpha)) * np.power(1.0 + z, alpha))
-                / ((np.power(self.init[1], 1.0 + alpha) - np.power(self.init[0], 1.0 + alpha)) * self.init[4]))
+            return (((power(self.init[6], 1.0 + alpha) - power(self.init[5], 1.0 + alpha)) * power(1.0 + z, alpha))
+                / ((power(self.init[1], 1.0 + alpha) - power(self.init[0], 1.0 + alpha)) * self.init[4]))
 
-        return (0.454 * Eval * phibar(z, alpha) * self.instr.beamf(theta)) / np.power(r, 2.0)
+        return (0.454 * Eval * phibar(z, alpha) * self.instr.beamf(theta)) / power(r, 2.0)
 
     def esch(self, gamma, ebar, cdf):
         '''
@@ -48,7 +48,7 @@ class Frb(object):
         xx = np.arange(0.0001, 10000, 0.01)
 
         def func0(En):
-            return (1.0 - np.exp(-En / ebar))
+            return (1.0 - exp(-En / ebar))
 
         def func(En):
             return (1.0 - (sc.gammainc(1.0 + gamma, En * (1.0 + gamma) / ebar) / sc.gamma(1.0 + gamma)))
@@ -77,38 +77,38 @@ class Frb(object):
         :return: predicted binned FRB events
         '''
         if alpha == -1.0:
-            alpha += np.random.uniform(0,0.001)
+            alpha += random.uniform(0,0.001)
         Eval = self.esch(gama, Ebar, cdf)
-        indx = np.where(Eval != 10000)[0]
+        indx = where(Eval != 10000)[0]
 
         Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
 
-        cond = np.where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0]
+        cond = where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0]
 
         DMa = dmtot[cond]
         Fval = Fval[cond]
 
-        if len(cond) == 0:
-            return -np.inf
+        if len(cond) == 0: #no predictions are found
+            return 0
 
-        nDMmod = ((np.log(DMa) - np.log(self.init[10])) / self.init[12])
-        nFmod = ((np.log(Fval) - np.log(self.init[11])) / self.init[13])
+        nDMmod = ((log(DMa) - log(self.init[10])) / self.init[12])
+        nFmod = ((log(Fval) - log(self.init[11])) / self.init[13])
 
-        x0 = np.where(nDMmod < int(self.init[15]))[0]
+        x0 = where(nDMmod < int(self.init[15]))[0]
 
-        x1 = np.where(nDMmod[x0] >= 0.0)[0]
+        x1 = where(nDMmod[x0] >= 0.0)[0]
 
-        y0 = np.where(nFmod[x0[x1]] < int(self.init[16]))[0]
+        y0 = where(nFmod[x0[x1]] < int(self.init[16]))[0]
 
-        y1 = np.where(nFmod[x0[x1[y0]]] >= 0.0)[0]
+        y1 = where(nFmod[x0[x1[y0]]] >= 0.0)[0]
 
         nDMmod = nDMmod[x0[x1[y0[y1]]]]
         nFmod =  nFmod[x0[x1[y0[y1]]]]
 
-        mua = plt.hist2d(x=nDMmod,y=nFmod, bins=(int(self.init[15]), int(self.init[16])))[0]
-        mua = (mua * self.init[14])/ len(cond)
+        mup = array(hist2d(x=nDMmod,y=nFmod, bins=(int(self.init[15]), int(self.init[16])))[0])
+        mup = (mup * self.init[14])/ len(cond)
 
-        return mua
+        return mup
 
     def loss(self, N, mu):
         '''
@@ -131,7 +131,7 @@ class Frb(object):
         ll = 0
         for i in range(int(self.init[15])):
             for j in range(int(self.init[16])):
-                if (mu[i][j] != 0):
+                if (mu[i][j] != 0): # other conditions already consumed inside it, except where (mu[i,j] = 0); it is ruled-out.
                     ll += N[i, j] * np.log(mu[i, j]) - mu[i, j]
-
+                    
         return ll
