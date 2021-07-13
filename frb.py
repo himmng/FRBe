@@ -24,7 +24,7 @@ class Frb(object):
         '''
         Calculate fluence for the given telescope.
         :param z: redshift
-        :param r: radius
+        :param r: 
         :param theta: telescope beam angle
         :param alpha: spectral index
         :param Eval: Energy
@@ -69,7 +69,7 @@ class Frb(object):
         :param Ebar: FRB average energy
         :param gama: FRB gamma exponent parameter
         :param z: FRB redshift
-        :param r: radius
+        :param r: 
         :param theta: telescope beam angle
         :param dmtot: Total dispersion measure
         :param wwa: width of FRB profile
