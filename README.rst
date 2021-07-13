@@ -28,9 +28,9 @@ Install
 
 ::
 
-    $ git clone https://github.com/himmng/FRBe.git --user
+    $ git clone https://github.com/himmng/FRBe.git
     $ cd FRBe
-    $ python setup.py install
+    $ python setup.py install --user
 
 ::
 
