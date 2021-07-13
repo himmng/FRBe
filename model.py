@@ -17,6 +17,22 @@ class Conf(object):
         :return: telescope parameters for given dataset (type: array)
         parameters: array( nuA, nuB, dmMW, nu, BW, nu1, nu2, theta0,
          Nch, Flim, DMmin, Fmin, hDM, hF, nev, nDMbin, nFbin)
+         
+        nuA ==>Normalization Frequency Limit Lower : GHz 
+        nuB ==>Normalization Frequency Limit Upper : GHz
+        dmMW ==>DM for Milkyway : pc.cm^-3
+        nu ==>Central Frequency : GHz
+        BW ==>Bandwidth : GHz
+        nu1 ==>Lower Frequency limit : GHz
+        nu2 ==>Upper Frequency limit : GHz
+        theta0 ==>Field of view : rad
+        Nch ==>Number of Channels
+        Flim ==>Limiting Fluence
+        hDM ==>
+        hF ==>
+        nev ==>Number of FRB Events
+        nDMbin ==> bins along DM axis
+        nFbin ==> bins along fluence axis
         '''
         init = np.loadtxt(self.path + 'init')
         if self.name == 'parkes':
