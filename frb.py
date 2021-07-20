@@ -89,7 +89,7 @@ class Frb(object):
         Fval = Fval[cond]
 
         if len(cond) == 0: #no predictions are found
-            return 0
+            return 0.0
 
         nDMmod = ((log(DMa) - log(self.init[10])) / self.init[12])
         nFmod = ((log(Fval) - log(self.init[11])) / self.init[13])
@@ -109,6 +109,58 @@ class Frb(object):
         mup = (mup * self.init[14])/ len(cond)
 
         return mup
+
+    def mua(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf):
+            '''
+
+            :param alpha: FRB spectral index parameter
+            :param Ebar: FRB average energy
+            :param gama: FRB gamma exponent parameter
+            :param z: FRB redshift
+            :param r:
+            :param theta: telescope beam angle
+            :param dmtot: Total dispersion measure
+            :param wwa: width of FRB profile
+            :param cdf: cumulative distribution parameter
+            :return: predicted binned FRB events
+            '''
+            if alpha == -1.0:
+                alpha += 0.0001  # random.uniform(0,0.001)
+
+            Eval = self.esch(gama, Ebar, cdf)
+            indx = where(Eval != 10000)[0]
+
+            Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
+
+            cond = where((Fval / sqrt(wwa[indx])) >= self.init[9])[0]
+
+            DMa = dmtot[cond]
+            Fval = Fval[cond]
+
+            nDMmod = ((log(DMa) - log(self.init[10])) / self.init[12])
+            nFmod = ((log(Fval) - log(self.init[11])) / self.init[13])
+
+            x0 = where(nDMmod < int(self.init[15]))[0]
+
+            x1 = where(nDMmod[x0] >= 0.0)[0]
+
+            y0 = where(nFmod[x0[x1]] < int(self.init[16]))[0]
+
+            y1 = where(nFmod[x0[x1[y0]]] >= 0.0)[0]
+
+            nDMmod = np.int16(nDMmod[x0[x1[y0[y1]]]])
+            nFmod = np.int16(nFmod[x0[x1[y0[y1]]]])
+
+            count = np.zeros(shape=(int(self.init[15]), int(self.init[16])))
+            if len(cond) == 0:  # no predictions are found
+                return count
+
+            for ii in range(len(nDMmod)):
+                count[nDMmod[ii]][nFmod[ii]] += 1
+
+            mua = count * self.init[14] / len(cond)
+
+            return mua
 
     def loss(self, N, mu):
         '''
@@ -135,3 +187,32 @@ class Frb(object):
                     ll += N[i, j] * np.log(mu[i, j]) - mu[i, j]
                     
         return ll
+
+    def data_bin(self, DMobs, Fobs):
+        '''
+
+            :param DMobs: Observed Dispersion measure
+            :param Fobs: Observed Fluence measure
+            :return: binned array
+        '''
+        Na = np.zeros(shape=(int(self.init[15]), int(self.init[16])))
+        for i in range(0, int(self.init[14])):
+            nDMobs = ((log(DMobs[i]) - log(self.init[10])) / self.init[12])
+            nFobs = ((log(Fobs[i]) - log(self.init[11])) / self.init[13])
+            if (nDMobs >= 0 and nFobs >= 0 and nDMobs < int(self.init[15]) and nFobs < int(self.init[16])):
+                Na[int(nDMobs)][int(nFobs)] += 1
+
+        return Na
+
+    def hex_bin(self, DMobs, Fobs):
+        '''
+
+        :param DMobs: Observed Dispersion measure
+        :param Fobs: Observed Fluence measure
+        :return: binned array
+        '''
+        nDMobs = ((log(DMobs) - log(self.init[10])) / self.init[12])
+        nFobs = ((log(Fobs) - log(self.init[11])) / self.init[13])
+        Na = array(hist2d(x=nDMobs, y=nFobs, bins=(int(self.init[15]), int(self.init[16])))[0])
+        return Na
+
