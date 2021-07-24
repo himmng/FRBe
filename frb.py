@@ -24,7 +24,6 @@ class Frb(object):
         '''
         Calculate fluence for the given telescope.
         :param z: redshift
-        :param r: 
         :param theta: telescope beam angle
         :param alpha: spectral index
         :param Eval: Energy
@@ -62,14 +61,13 @@ class Frb(object):
             m = m(cdf)
             return m
 
-    def mu(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf):
+    def mu(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf): ##for updated results
         '''
 
         :param alpha: FRB spectral index parameter
         :param Ebar: FRB average energy
         :param gama: FRB gamma exponent parameter
         :param z: FRB redshift
-        :param r: 
         :param theta: telescope beam angle
         :param dmtot: Total dispersion measure
         :param wwa: width of FRB profile
@@ -110,14 +108,13 @@ class Frb(object):
 
         return mup
 
-    def mua(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf):
+    def mua(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf): ##(for old calculations)
             '''
 
             :param alpha: FRB spectral index parameter
             :param Ebar: FRB average energy
             :param gama: FRB gamma exponent parameter
             :param z: FRB redshift
-            :param r:
             :param theta: telescope beam angle
             :param dmtot: Total dispersion measure
             :param wwa: width of FRB profile
@@ -125,7 +122,7 @@ class Frb(object):
             :return: predicted binned FRB events
             '''
             if alpha == -1.0:
-                alpha += 0.0001  # random.uniform(0,0.001)
+                alpha += random.uniform(0,0.001)
 
             Eval = self.esch(gama, Ebar, cdf)
             indx = where(Eval != 10000)[0]

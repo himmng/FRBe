@@ -6,12 +6,12 @@ import time
 import emcee
 
 os.environ["OMP_NUM_THREADS"] = "1"
-path = './'
-
-nsteps = 200
-nwalkers = 6
-alpha = np.random.uniform(-20., 20., nwalkers)
-ebar = np.random.uniform(0.01, 10., nwalkers)
+path = './'  #this is the default path for "init"-- telescope parmaters
+## file 'init' is for new data, 'init_old' is for old data
+nsteps = 20000 # number of mcmc steps
+nwalkers = 100 # number of random walkers
+alpha = np.random.uniform(-5., 0., nwalkers)
+ebar = np.random.uniform(0.01, 5., nwalkers)
 gama = np.random.uniform(0., 6., nwalkers)
 initial = np.array([alpha, ebar, gama])
 initial = initial.T
@@ -32,10 +32,11 @@ dm_mo = dm_mo[0]
 
 mcmc_filename = 'joint_{0:s}_{1:s}{2:s}.h5'.format(sc_mo, ra_mo, dm_mo)  # MCMC filename
 
-# checking for the case
+# checking for the case (filename)
 print(mcmc_filename)
 
 # simulation data load#
+'''
 argc = np.loadtxt(path + 'sim_data/chime/{0:s}_{1:s}.dat'.format(ra_mo, dm_mo), usecols=[0, 1, 2, 4, sm, 8],
                   unpack=True)
 argp = np.loadtxt(path + 'sim_data/parkes/{0:s}_{1:s}.dat'.format(ra_mo, dm_mo), usecols=[0, 1, 2, 4, sm, 8],
@@ -44,38 +45,48 @@ arga = np.loadtxt(path + 'sim_data/askap/{0:s}_{1:s}.dat'.format(ra_mo, dm_mo), 
                   unpack=True)
 argu = np.loadtxt(path + 'sim_data/utmost/{0:s}_{1:s}.dat'.format(ra_mo, dm_mo), usecols=[0, 1, 2, 4, sm, 8],
                   unpack=True)
+'''
+
+argc = np.loadtxt(path + 'sim_data/chime/rand.dat', usecols=[0, 1, 2, 4, sm, 8],
+                  unpack=True)
+argp = np.loadtxt(path + 'sim_data/parkes/rand.dat', usecols=[0, 1, 2, 4, sm, 8],
+                  unpack=True)
+arga = np.loadtxt(path + 'sim_data/askap/rand.dat', usecols=[0, 1, 2, 4, sm, 8],
+                  unpack=True)
+argu = np.loadtxt(path + 'sim_data/utmost/rand.dat', usecols=[0, 1, 2, 4, sm, 8],
+                  unpack=True)
 
 # observational data load#
-Nac = np.loadtxt(path + 'obs_data/chime/Nac')
-Nap = np.loadtxt(path + 'obs_data/parkes/Nap')
-Nas = np.loadtxt(path + 'obs_data/askap/Nas')
-Nau = np.loadtxt(path + 'obs_data/utmost/Nau')
+Nac = np.loadtxt(path + 'obs_data/chime/Nac_old')
+Nap = np.loadtxt(path + 'obs_data/parkes/Nap_old')
+Nas = np.loadtxt(path + 'obs_data/askap/Nas_old')
+Nau = np.loadtxt(path + 'obs_data/utmost/Nau_old')
 
 
 def loss_chime(theta, ):
     chime = Frb(name='chime', path=path)
-    muc = chime.mu(*theta, *argc)
+    muc = chime.mua(*theta, *argc)
     return -(np.sum(np.dot((muc - Nac).T, (muc - Nac))))
 
 
 def loss_parkes(theta, ):
     parkes = Frb(name='parkes', path=path)
-    mup = parkes.mu(*theta, *argp)
+    mup = parkes.mua(*theta, *argp)
     return -(np.sum(np.dot((mup - Nap).T, (mup - Nap))))
 
 
 def loss_utmost(theta, ):
     utmost = Frb(name='utmost', path=path)
-    muu = utmost.mu(*theta, *argu)
+    muu = utmost.mua(*theta, *argu)
     return -(np.sum(np.dot((muu - Nau).T, (muu - Nau))))
 
 
 def loss_askap(theta, ):
     askap = Frb(name='askap', path=path)
-    mua = askap.mu(*theta, *arga)
+    mua = askap.mua(*theta, *arga)
     return -(np.sum(np.dot((mua - Nas).T, (mua - Nas))))
 
-
+# joint telescopes
 def joint_prob(theta, ):
     lp = log_prior(theta)
     if not np.isfinite(lp):
@@ -85,14 +96,7 @@ def joint_prob(theta, ):
            + loss_askap(theta, ) \
            + loss_utmost(theta, )
 
-
-def log_prior(theta):
-    alpha, Ebar, gama = theta
-    if -20. <= alpha <= 20. and 0.01 <= Ebar <= 10.0 and 0.0 <= gama <= 6.:
-        return 0.0
-    return -np.inf
-
-
+# for single telescope
 def prob(theta, name):
     lp = log_prior(theta)
     if not np.isfinite(lp):
@@ -108,11 +112,17 @@ def prob(theta, name):
     else:
         raise NameError('use correct name, available instrument names are parkes, chimes, utmost, askap')
 
+# setting the prior range
+def log_prior(theta):
+    alpha, Ebar, gama = theta
+    if -5. <= alpha <= 0. and 0.01 <= Ebar <= 5.0 and 0.0 <= gama <= 6.:
+        return 0.0
+    return -np.inf
 
 # MCMC functions
 backend = emcee.backends.HDFBackend(mcmc_filename)
 
-
+# for specific telescope case
 def run():
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, prob, pool=pool, backend=backend, args=[name])
@@ -121,7 +131,7 @@ def run():
         end = time.time()
     print('time taken is %s mins.' % np.around(np.float(end - start) / 60.))
 
-
+# for all telescopes
 def joint_run():
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, joint_prob, pool=pool, backend=backend)
@@ -131,5 +141,7 @@ def joint_run():
     print('time taken is %s mins.' % np.around(np.float(end - start) / 60.))
 
 
-name = 'chim'
-run()
+
+# running for joint estimation
+# uses 100 random walkers, 20000 steps
+joint_run()

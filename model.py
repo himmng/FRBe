@@ -34,7 +34,7 @@ class Conf(object):
         nDMbin ==> bins along DM axis
         nFbin ==> bins along fluence axis
         '''
-        init = np.loadtxt(self.path + 'init')
+        init = np.loadtxt(self.path + 'init_old')
         if self.name == 'parkes':
             return init[0]
         elif self.name == 'chime':
