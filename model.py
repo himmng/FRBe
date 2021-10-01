@@ -28,13 +28,13 @@ class Conf(object):
         theta0 ==>Field of view : rad
         Nch ==>Number of Channels
         Flim ==>Limiting Fluence
-        hDM ==>
-        hF ==>
+        hDM ==>divisor Despersion measure
+        hF ==>divisor Fluence measure 
         nev ==>Number of FRB Events
         nDMbin ==> bins along DM axis
         nFbin ==> bins along fluence axis
         '''
-        init = np.loadtxt(self.path + 'init_old')
+        init = np.loadtxt(self.path + 'init_old') #init_old is the old telescope parameter file
         if self.name == 'parkes':
             return init[0]
         elif self.name == 'chime':

@@ -20,7 +20,7 @@ ndim = 3
 # defining the data for different models (No-Sc, Sc-I, Sc-II), event rates, DM cases
 
 sc_mo = ['nosc', 'scone', 'sctwo']  # scattering models
-sm = [5, 6, 7]  # scattering model index in the data-set (5==> nosc, 6==> scone, 7==> sctwo)
+sm = [5, 6, 7]  # scattering model column in the data-set (5==> nosc, 6==> scone, 7==> sctwo)
 ra_mo = ['cer', 'sfr']  # rate model
 dm_mo = ['dm50', 'dmrand']  # DM cases
 

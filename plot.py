@@ -4,7 +4,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import h5py as hp
 
-#### ploting sceme ######
+#### plotting rc params ######
 mpl.rcParams['text.usetex'] = True
 mpl.rcParams['xtick.major.size'] = 8
 mpl.rcParams['xtick.minor.size'] = 4

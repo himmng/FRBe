@@ -29,6 +29,7 @@ class MCMC(object):
         lp = self.log_prior(theta)
         if not np.isfinite(lp):
             return -np.inf
+        
         if name == 'chime':
             chime = Frb(name, path=path)
             muc = chime.mu(*theta, *argc)

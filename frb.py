@@ -1,5 +1,5 @@
 from model import Conf
-from numpy import *
+import numpy as np  
 import scipy.special as sc
 from matplotlib.pyplot import *
 from scipy.interpolate import interp1d
@@ -11,7 +11,8 @@ class Frb(object):
     def __init__(self, name, path):
         '''
         :param name: telescope name
-        :param path: provide the path to the telescope parameters data; please follow the indexing of the telescope
+        :param path: provide the path to the telescope parameters data;
+         please follow the indexing of the telescope
         parameters as mentioned in the Config Class. Also, It is recommended that
         you put all of the dataset into a same directory.
         '''
@@ -44,10 +45,10 @@ class Frb(object):
         :param cdf: cumulative distribution parameter
         :return: cumulative distribution of Schechter Function (energy-cdf)
         '''
-        xx = np.arange(0.0001, 10000, 0.01)
+        xx = np.arange(0.0001, 10000, 0.01) #this is just a x-range to interpolate the energy function 
 
         def func0(En):
-            return (1.0 - exp(-En / ebar))
+            return (1.0 - np.exp(-En / ebar))
 
         def func(En):
             return (1.0 - (sc.gammainc(1.0 + gamma, En * (1.0 + gamma) / ebar) / sc.gamma(1.0 + gamma)))
@@ -61,7 +62,8 @@ class Frb(object):
             m = m(cdf)
             return m
 
-    def mu(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf): ##for updated results
+    def mu(self, alpha, Ebar, gama, z, r, theta, dmtot, wwa, cdf): ##for updated results 
+        #(only three parameters alpha, Ebar, gama are variable)
         '''
 
         :param alpha: FRB spectral index parameter
@@ -75,13 +77,13 @@ class Frb(object):
         :return: predicted binned FRB events
         '''
         if alpha == -1.0:
-            alpha += random.uniform(0,0.001)
+            alpha += np.random.uniform(0,0.001)
         Eval = self.esch(gama, Ebar, cdf)
-        indx = where(Eval != 10000)[0]
+        indx = np.where(Eval != 10000)[0]
 
         Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
 
-        cond = where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0]
+        cond = np.where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0]
 
         DMa = dmtot[cond]
         Fval = Fval[cond]
@@ -92,18 +94,18 @@ class Frb(object):
         nDMmod = ((log(DMa) - log(self.init[10])) / self.init[12])
         nFmod = ((log(Fval) - log(self.init[11])) / self.init[13])
 
-        x0 = where(nDMmod < int(self.init[15]))[0]
+        x0 = np.where(nDMmod < int(self.init[15]))[0]
 
-        x1 = where(nDMmod[x0] >= 0.0)[0]
+        x1 = np.where(nDMmod[x0] >= 0.0)[0]
 
-        y0 = where(nFmod[x0[x1]] < int(self.init[16]))[0]
+        y0 = np.where(nFmod[x0[x1]] < int(self.init[16]))[0]
 
-        y1 = where(nFmod[x0[x1[y0]]] >= 0.0)[0]
+        y1 = np.where(nFmod[x0[x1[y0]]] >= 0.0)[0]
 
         nDMmod = nDMmod[x0[x1[y0[y1]]]]
         nFmod =  nFmod[x0[x1[y0[y1]]]]
 
-        mup = array(hist2d(x=nDMmod,y=nFmod, bins=(int(self.init[15]), int(self.init[16])))[0])
+        mup = np.array(hist2d(x=nDMmod,y=nFmod, bins=(int(self.init[15]), int(self.init[16])))[0])
         mup = (mup * self.init[14])/ len(cond)
 
         return mup
@@ -122,34 +124,35 @@ class Frb(object):
             :return: predicted binned FRB events
             '''
             if alpha == -1.0:
-                alpha += random.uniform(0,0.001)
+                alpha += np.random.uniform(0,0.001)
 
             Eval = self.esch(gama, Ebar, cdf)
-            indx = where(Eval != 10000)[0]
+            indx = np.where(Eval != 10000)[0]
 
             Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
 
-            cond = where((Fval / sqrt(wwa[indx])) >= self.init[9])[0]
+            cond = np.where((Fval / sqrt(wwa[indx])) >= self.init[9])[0]
 
             DMa = dmtot[cond]
             Fval = Fval[cond]
 
-            nDMmod = ((log(DMa) - log(self.init[10])) / self.init[12])
-            nFmod = ((log(Fval) - log(self.init[11])) / self.init[13])
+            nDMmod = ((np.log(DMa) - np.log(self.init[10])) / self.init[12])
+            nFmod = ((np.log(Fval) - np.log(self.init[11])) / self.init[13])
+            # justing bypassing loops
+            x0 = np.where(nDMmod < int(self.init[15]))[0]
 
-            x0 = where(nDMmod < int(self.init[15]))[0]
+            x1 = np.where(nDMmod[x0] >= 0.0)[0]
 
-            x1 = where(nDMmod[x0] >= 0.0)[0]
+            y0 = np.where(nFmod[x0[x1]] < int(self.init[16]))[0]
 
-            y0 = where(nFmod[x0[x1]] < int(self.init[16]))[0]
-
-            y1 = where(nFmod[x0[x1[y0]]] >= 0.0)[0]
+            y1 = np.where(nFmod[x0[x1[y0]]] >= 0.0)[0]
+            #### till here
 
             nDMmod = np.int16(nDMmod[x0[x1[y0[y1]]]])
             nFmod = np.int16(nFmod[x0[x1[y0[y1]]]])
 
             count = np.zeros(shape=(int(self.init[15]), int(self.init[16])))
-            if len(cond) == 0:  # no predictions are found
+            if len(cond) == 0:  # no predictions
                 return count
 
             for ii in range(len(nDMmod)):
@@ -167,7 +170,7 @@ class Frb(object):
         :return: count loss between observation and prediction
         '''
 
-        return -(np.sum(np.dot((mu - N).T, (mu - N))))
+        return -(np.sum(np.dot((mu - N).T, (mu - N)))) #loss for likelihood 
 
 
     def loglike(self, N, mu):
@@ -180,7 +183,8 @@ class Frb(object):
         ll = 0
         for i in range(int(self.init[15])):
             for j in range(int(self.init[16])):
-                if (mu[i][j] != 0): # other conditions already consumed inside it, except where (mu[i,j] = 0); it is ruled-out.
+                if (mu[i][j] != 0): # other conditions already 
+                    #consumed inside it, except where (mu[i,j] = 0); it is ruled-out.
                     ll += N[i, j] * np.log(mu[i, j]) - mu[i, j]
                     
         return ll
@@ -194,8 +198,8 @@ class Frb(object):
         '''
         Na = np.zeros(shape=(int(self.init[15]), int(self.init[16])))
         for i in range(0, int(self.init[14])):
-            nDMobs = ((log(DMobs[i]) - log(self.init[10])) / self.init[12])
-            nFobs = ((log(Fobs[i]) - log(self.init[11])) / self.init[13])
+            nDMobs = ((np.log(DMobs[i]) - np.log(self.init[10])) / self.init[12])
+            nFobs = ((np.log(Fobs[i]) - np.log(self.init[11])) / self.init[13])
             if (nDMobs >= 0 and nFobs >= 0 and nDMobs < int(self.init[15]) and nFobs < int(self.init[16])):
                 Na[int(nDMobs)][int(nFobs)] += 1
 
@@ -208,8 +212,8 @@ class Frb(object):
         :param Fobs: Observed Fluence measure
         :return: binned array
         '''
-        nDMobs = ((log(DMobs) - log(self.init[10])) / self.init[12])
-        nFobs = ((log(Fobs) - log(self.init[11])) / self.init[13])
-        Na = array(hist2d(x=nDMobs, y=nFobs, bins=(int(self.init[15]), int(self.init[16])))[0])
+        nDMobs = ((np.log(DMobs) - np.log(self.init[10])) / self.init[12])
+        nFobs = ((np.log(Fobs) - np.log(self.init[11])) / self.init[13])
+        Na = np.array(hist2d(x=nDMobs, y=nFobs, bins=(int(self.init[15]), int(self.init[16])))[0])
         return Na
 

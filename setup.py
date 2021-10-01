@@ -1,4 +1,4 @@
-import setuptools
+import setuptools #ignore this 
 
 with open("README.rst", "r") as fh:
     long_description = fh.read()
