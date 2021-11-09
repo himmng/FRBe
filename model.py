@@ -5,12 +5,13 @@ class Conf(object):
     Conf class enables to configure the parameters and beam response for PARKES, CHIME, UTMOST, ASKAP
     telescopes
     """
-    def __init__(self, name, path):
+    def __init__(self, name, paramfile):
         '''
         :param name: telescope name (use amongst; parkes, chime, utmost, askap)
+        :param paramfile: telescope parameter file (init file)
         '''
         self.name = name
-        self.path = path
+        self.paramfile = paramfile
 
     def params(self):
         '''
@@ -34,7 +35,7 @@ class Conf(object):
         nDMbin ==> bins along DM axis
         nFbin ==> bins along fluence axis
         '''
-        init = np.loadtxt(self.path + 'init_old') #init_old is the old telescope parameter file
+        init = np.loadtxt(self.paramfile) #init_old is the old telescope parameter file
         if self.name == 'parkes':
             return init[0]
         elif self.name == 'chime':

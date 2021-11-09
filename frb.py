@@ -1,5 +1,6 @@
 from model import Conf
-import numpy as np  
+import numpy as np 
+from numpy import *
 import scipy.special as sc
 from matplotlib.pyplot import *
 from scipy.interpolate import interp1d
@@ -17,9 +18,9 @@ class Frb(object):
         you put all of the dataset into a same directory.
         '''
 
-        instr = Conf(name, path)  # configuring the telescope (instrument)
-        self.init =  instr.params() # telescope parameters
-        self.instr = instr
+        instrument = Conf(name, path)  # configuring the telescope (instrument)
+        self.init =  instrument.params() # telescope parameters
+        self.instrument = instrument
 
     def fluence(self, z, r, theta, alpha, Eval):
         '''
@@ -35,7 +36,7 @@ class Frb(object):
             return (((power(self.init[6], 1.0 + alpha) - power(self.init[5], 1.0 + alpha)) * power(1.0 + z, alpha))
                 / ((power(self.init[1], 1.0 + alpha) - power(self.init[0], 1.0 + alpha)) * self.init[4]))
 
-        return (0.454 * Eval * phibar(z, alpha) * self.instr.beamf(theta)) / power(r, 2.0)
+        return (0.454 * Eval * phibar(z, alpha) * self.instrument.beamf(theta)) / power(r, 2.0)
 
     def esch(self, gamma, ebar, cdf):
         '''
@@ -79,11 +80,11 @@ class Frb(object):
         if alpha == -1.0:
             alpha += np.random.uniform(0,0.001)
         Eval = self.esch(gama, Ebar, cdf)
-        indx = np.where(Eval != 10000)[0]
+        indx = np.where(Eval != 10000)[0] # where Eval is discarded
 
         Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
 
-        cond = np.where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0]
+        cond = np.where((Fval / np.sqrt(wwa[indx])) >= self.init[9])[0] # where Fval > Flim
 
         DMa = dmtot[cond]
         Fval = Fval[cond]
@@ -94,7 +95,7 @@ class Frb(object):
         nDMmod = ((log(DMa) - log(self.init[10])) / self.init[12])
         nFmod = ((log(Fval) - log(self.init[11])) / self.init[13])
 
-        x0 = np.where(nDMmod < int(self.init[15]))[0]
+        x0 = np.where(nDMmod < int(self.init[15]))[0] # just bypassing the loops
 
         x1 = np.where(nDMmod[x0] >= 0.0)[0]
 
@@ -128,7 +129,7 @@ class Frb(object):
 
             Eval = self.esch(gama, Ebar, cdf)
             indx = np.where(Eval != 10000)[0]
-
+            #indxx = np.where(Eval == 10000)[0]
             Fval = self.fluence(z, r, theta, alpha, Eval)[indx]
 
             cond = np.where((Fval / sqrt(wwa[indx])) >= self.init[9])[0]
@@ -148,8 +149,8 @@ class Frb(object):
             y1 = np.where(nFmod[x0[x1[y0]]] >= 0.0)[0]
             #### till here
 
-            nDMmod = np.int16(nDMmod[x0[x1[y0[y1]]]])
-            nFmod = np.int16(nFmod[x0[x1[y0[y1]]]])
+            nDMmod = np.int64(nDMmod[x0[x1[y0[y1]]]])
+            nFmod = np.int64(nFmod[x0[x1[y0[y1]]]])
 
             count = np.zeros(shape=(int(self.init[15]), int(self.init[16])))
             if len(cond) == 0:  # no predictions
@@ -181,13 +182,15 @@ class Frb(object):
         :return: binned summation of log likelihood
         '''
         ll = 0
+        lm = np.ma.masked_equal(N, 0)
+        lm = np.sum(lm*np.log(lm) - lm)
         for i in range(int(self.init[15])):
             for j in range(int(self.init[16])):
                 if (mu[i][j] != 0): # other conditions already 
                     #consumed inside it, except where (mu[i,j] = 0); it is ruled-out.
                     ll += N[i, j] * np.log(mu[i, j]) - mu[i, j]
                     
-        return ll
+        return ll/lm
 
     def data_bin(self, DMobs, Fobs):
         '''
