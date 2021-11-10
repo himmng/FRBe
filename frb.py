@@ -182,15 +182,18 @@ class Frb(object):
         :return: binned summation of log likelihood
         '''
         ll = 0
-        lm = np.ma.masked_equal(N, 0)
-        lm = np.sum(lm*np.log(lm) - lm)
+        Na = np.ma.masked_equal(N, 0)
+        lm = np.sum(Na*np.log(Na) - Na)
         for i in range(int(self.init[15])):
             for j in range(int(self.init[16])):
                 if (mu[i][j] != 0): # other conditions already 
                     #consumed inside it, except where (mu[i,j] = 0); it is ruled-out.
                     ll += N[i, j] * np.log(mu[i, j]) - mu[i, j]
-                    
-        return ll/lm
+        if (lm < 0 and ll > 0) or (lm > 0 and ll < 0):            
+            return -100
+        else:
+            return ll/lm
+
 
     def data_bin(self, DMobs, Fobs):
         '''
