@@ -163,6 +163,14 @@ class Frb(object):
 
             return mua
 
+    def log_post(self, N, mu, a=1, b=0.1):
+        log_prob= -np.log((len(N.flatten())+1/b)**(len(N.flatten())*np.mean(N.flatten())+a-2)) \
+        + (-len(N.flatten())+ 1/b) * mu + \
+        + (len(N.flatten())*np.mean(N.flatten()) + a - 1)* np.log(mu) \
+        - np.log(sc.gamma(len(N.flatten())*np.mean(N.flatten())+a))
+        
+        return np.sum(log_prob)
+
     def loss(self, N, mu):
         '''
 
