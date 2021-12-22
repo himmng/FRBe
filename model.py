@@ -1,8 +1,8 @@
 import numpy as np
 
-class Conf(object):
+class Configure(object):
     """
-    Conf class enables to configure the parameters and beam response for PARKES, CHIME, UTMOST, ASKAP
+    Configure class enables to configure the parameters and beam response for PARKES, CHIME, UTMOST, ASKAP
     telescopes
     """
     def __init__(self, name, paramfile):
@@ -19,13 +19,13 @@ class Conf(object):
         parameters: array( nuA, nuB, dmMW, nu, BW, nu1, nu2, theta0,
          Nch, Flim, DMmin, Fmin, hDM, hF, nev, nDMbin, nFbin)
          
-        nuA ==>Normalization Frequency Limit Lower : GHz 
-        nuB ==>Normalization Frequency Limit Upper : GHz
+        nuA ==>Normalization Frequency Limit Lower : MHz 
+        nuB ==>Normalization Frequency Limit Upper : MHz
         dmMW ==>DM for Milkyway : pc.cm^-3
-        nu ==>Central Frequency : GHz
-        BW ==>Bandwidth : GHz
-        nu1 ==>Lower Frequency limit : GHz
-        nu2 ==>Upper Frequency limit : GHz
+        nu ==>Central Frequency : MHz
+        BW ==>Bandwidth : MHz
+        nu1 ==>Lower Frequency limit : MHz
+        nu2 ==>Upper Frequency limit : MHz
         theta0 ==>Field of view : rad
         Nch ==>Number of Channels
         Flim ==>Limiting Fluence
@@ -35,20 +35,21 @@ class Conf(object):
         nDMbin ==> bins along DM axis
         nFbin ==> bins along fluence axis
         '''
-        init = np.loadtxt(self.paramfile) #init_old is the old telescope parameter file
+        init = np.loadtxt(self.paramfile)
         if self.name == 'parkes':
             return init[0]
         elif self.name == 'chime':
             return init[1]
-        elif self.name == 'utmost':
-            return init[2]
         elif self.name == 'askap':
+            return init[2]
+        elif self.name == 'utmost':
             return init[3]
         else:
             raise NameError('use correct name, available instrument names are parkes, chimes, utmost, askap')
 
     def beamf(self, thy):
         '''
+        Beam functions for PARKES, CHIME, ASKAP, UTMOST telescopes
         :param thy: beam angle (type: int, float, array)
         :return: beam response (type: float, array)
         '''
