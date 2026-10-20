@@ -5,23 +5,54 @@ FRBe
 .. image:: http://ForTheBadge.com/images/badges/made-with-python.svg
    :target: https://www.python.org/
 
+**Fast Radio Burst Estimator: maximum likelihood estimation of FRB population
+parameters from observed fluence and dispersion measure.**
 
-FRBe (Fast Radio Bursts Estimator) evaluate the FRB populations and event counts over binned fluence and Dispersion Measure.
-The project is under development.
+FRBe models the population of Fast Radio Bursts and predicts event counts
+binned in fluence and dispersion measure, for several radio telescopes with
+different frequency coverage and different detection criteria. It compares
+those predictions with observed catalogues to estimate the parameters of the
+underlying population by maximum likelihood, and supports MCMC sampling for
+posterior estimation.
+
+Method
+------
+
+Each telescope has its own frequency range, sensitivity and selection function,
+so the observed burst counts cannot be compared directly across instruments.
+FRBe handles this by simulating the expected counts per telescope under a given
+population model, then evaluating the likelihood of the observed data under
+that model.
+
+**Population parameters:**
+
+- ``alpha``: spectral index
+- ``Ebar`` (``E33``): mean FRB energy, in units of 10^33 J, across
+  2128 to 2848 MHz in the FRB rest frame
+- ``gamma``: exponent of the Schechter luminosity function
+
+**Model variants.** The framework compares competing physical models rather
+than fitting one: pulse scatter broadening increasing moderately with redshift,
+increasing sharply, or absent; a comoving event rate density that is constant
+with redshift against one following the cosmological star formation rate; and a
+fixed against a randomly drawn host-galaxy dispersion measure.
+
+**Estimation.** Parameters are estimated by maximum likelihood, either from the
+loss function directly or from the log-likelihood, for a single telescope or
+jointly across telescopes. Posterior sampling uses
+`emcee <https://emcee.readthedocs.io/en/stable/>`_.
+
+Supported telescopes: Parkes, ASKAP, CHIME, UTMOST.
 
 Requirements
 ------------
 
 ::
 
-
     numpy
     scipy
     emcee
     matplotlib
-
-
-::
 
 Install
 -------
@@ -32,82 +63,72 @@ Install
     $ cd FRBe
     $ python setup.py install --user
 
-::
+Usage
+-----
 
-How to use
-----------
-make two different directories for observational, simulation data to put the data there
-(if doesn't exist)
-
-
-::
+Create directories for the observational and simulated data::
 
     $ mkdir obs_data sim_data
 
-::
-
-
-Using the FRB class in python:
-
-::
+Predicting event counts for a given telescope::
 
     from frb import FRB
 
-    # using for specific telescope; use e.g. chime, utmost, askap, parkes
+    # telescope name: chime, utmost, askap or parkes
+    chime = FRB(name='chime', path='path_to_init')   # path to telescope parameters
+                                                     # see the Config docstring
 
-    chime = FRB(name = 'chime', path = 'path_to_init') # provide name of telescope, path ot init (telescope parameters).
-    # see docstring of Config class for help.
-
-    # To do the prediction
     muc = chime.mu(alpha, ebar, gamma, *args)
 
-    # OR use
-
+    # or, equivalently
     parameters = alpha, ebar, gamma
     muc = chime.mu(*parameters, *args)
-    # *args; positional arguments are the simulation values which loaded at once
+
+    # *args are the simulation values loaded once:
     # args = [z, r, theta, dmtot, wwa, cdf]
 
-
-::
-
-Using in MCMC (coming soon)
-
-::
+Parameter estimation with MCMC::
 
     from mcmc import MCMC
 
-    # create instances
     nwalkers = 6
     ndim = 3
-    mcmc_filename = 'run.h5'
-    # for specific case of (No-Sc, Sc-I, Sc-II)(cer, sfr,) and (DM50, DMrand)
-    # must be a .h5 file
+    mcmc_filename = 'run.h5'       # must be a .h5 file
 
-    mcmc = MCMC(nwalkers, ndim, filename)
+    mcmc = MCMC(nwalkers, ndim, mcmc_filename)
 
-    # load your dataset...
+    # joint estimation across telescopes
+    joint = mcmc.joint_run(method='use_loss')      # maximum likelihood region
+    joint = mcmc.joint_run(method='use_loglike')   # log-likelihood directly
 
-    # Uses for joint estimation
+    # single telescope
+    run = mcmc.run(method='use_loss', name='chime')
+    run = mcmc.run(method='use_loglike', name='chime')
 
-    joint = mcmc.joint_run(method = 'use_loss')
-    # It will use loss function to find out the maximum likelihood region
+Citation
+--------
 
-    #OR
+FRBe was developed for the statistical analysis in the following papers:
 
-    joint = mcmc.joint_run(method = 'use_loglike')
-    # It will use log likelihood function itself
+    S. Bhattacharyya, H. Tiwari, S. Bharadwaj and S. Majumdar,
+    *A maximum likelihood estimate of the parameters of the FRB population*,
+    Monthly Notices of the Royal Astronomical Society: Letters, 2021.
+    DOI: https://doi.org/10.1093/mnrasl/slab107 |
+    arXiv: https://arxiv.org/abs/2109.06785
 
-    # Uses for specific telescope cases
-    # using specific telescopes; ; use e.g. chime, utmost, askap, parkes as name
-    run = mcmc.run(method = 'use_loss', name='chime')
+    S. Bhattacharyya, S. Bharadwaj, H. Tiwari and S. Majumdar,
+    *Modelling the energy distribution in CHIME/FRB Catalog-1*,
+    Monthly Notices of the Royal Astronomical Society, 2023, 522, 3349.
+    DOI: https://doi.org/10.1093/mnras/stad458 |
+    arXiv: https://arxiv.org/abs/2209.12961
 
-    # OR
+The first paper analyses 82 non-repeating FRBs detected at Parkes, ASKAP, CHIME
+and UTMOST, and finds best-fit values alpha = -1.53, Ebar_33 = 1.55 and
+gamma = 0.77. The second uses 254 non-repeating low dispersion measure bursts
+from CHIME/FRB Catalog-1 to derive the conditional energy distribution,
+finding evidence for two distinct FRB populations.
 
-    run = mcmc.run(method = 'use_loglike', name='chime')
+Status
+------
 
-
-
-
-
-
+Under active development. The MCMC module is being extended.
